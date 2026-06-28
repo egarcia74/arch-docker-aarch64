@@ -1,6 +1,10 @@
 #Requires -Version 7
 #Requires -Modules @{ ModuleName = 'Pester'; ModuleVersion = '5.0.0' }
 
+# Read the required-key list from its single source (the config itself is still loaded
+# and asserted directly below, in isolation from _Common's merge/derive logic).
+. (Join-Path (Split-Path -Parent $PSScriptRoot) 'scripts/_Common.ps1')
+
 BeforeAll {
     $script:ConfigPath = Join-Path (Split-Path -Parent $PSScriptRoot) 'config/container.psd1'
     $script:Config = Import-PowerShellDataFile -Path $script:ConfigPath
@@ -11,10 +15,7 @@ Describe 'config/container.psd1' {
         $Config | Should -BeOfType [hashtable]
     }
 
-    It 'defines required key <_>' -ForEach @(
-        'ImageName', 'BaseImage', 'ContainerName', 'Hostname', 'VolumeName', 'Platform',
-        'RootfsUrl', 'Packages', 'DevUser', 'SshHostPort', 'StartSshOnBoot'
-    ) {
+    It 'defines required key <_>' -ForEach $RequiredConfigKeys {
         $Config.ContainsKey($_) | Should -BeTrue
     }
 

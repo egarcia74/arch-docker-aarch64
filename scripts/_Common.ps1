@@ -9,6 +9,13 @@ $script:ScriptsDir = $PSScriptRoot
 $script:RepoRoot   = Split-Path -Parent $PSScriptRoot
 $script:ConfigPath = Join-Path $script:RepoRoot 'config/container.psd1'
 
+# Single source for the required config keys: enforced by Confirm-ArchConfig and
+# enumerated by tests/Config.Tests.ps1 (which dot-sources this file to read it).
+$script:RequiredConfigKeys = @(
+    'ImageName', 'BaseImage', 'ContainerName', 'Hostname', 'VolumeName', 'Platform',
+    'RootfsUrl', 'Packages', 'DevUser', 'SshHostPort', 'StartSshOnBoot'
+)
+
 function Get-ArchConfig {
     <#  .SYNOPSIS Load config/container.psd1 as a hashtable, with derived values. #>
     if (-not (Test-Path $script:ConfigPath)) {
@@ -25,7 +32,39 @@ function Get-ArchConfig {
     # The persisted mount is the dev user's home; derive it so DevUser is the
     # single knob for "who and where" (keeps it from drifting out of sync).
     $cfg.MountPath = "/home/$($cfg.DevUser)"
+    Confirm-ArchConfig $cfg
     $cfg
+}
+
+function Confirm-ArchConfig {
+    <#  .SYNOPSIS Validate a loaded config so bad values (incl. local overrides) fail fast
+        with a clear message instead of surfacing as an obscure error much later. #>
+    param([Parameter(Mandatory)][hashtable]$Config)
+
+    foreach ($key in $script:RequiredConfigKeys) {
+        if (-not $Config.ContainsKey($key)) { throw "Config: required key '$key' is missing." }
+    }
+    if ($Config.Platform -notmatch '^[\w.-]+/[\w./-]+$') {
+        throw "Config: Platform '$($Config.Platform)' is not a valid '<os>/<arch>' value."
+    }
+    if (-not [uri]::IsWellFormedUriString($Config.RootfsUrl, [System.UriKind]::Absolute)) {
+        throw "Config: RootfsUrl '$($Config.RootfsUrl)' is not a valid absolute URI."
+    }
+    if ($Config.SshHostPort -isnot [int] -or $Config.SshHostPort -lt 1 -or $Config.SshHostPort -gt 65535) {
+        throw "Config: SshHostPort '$($Config.SshHostPort)' must be an integer in 1..65535."
+    }
+    if ($Config.Packages -isnot [array] -or $Config.Packages.Count -eq 0) {
+        throw 'Config: Packages must be a non-empty array.'
+    }
+    if ($Config.DevUser -notmatch '^[a-z_][a-z0-9_-]*$') {
+        throw "Config: DevUser '$($Config.DevUser)' is not a valid Linux username."
+    }
+    if ($Config.StartSshOnBoot -isnot [bool]) {
+        throw 'Config: StartSshOnBoot must be a boolean ($true/$false).'
+    }
+    if ($Config.BaseImage -isnot [string]) {
+        throw 'Config: BaseImage must be a string ('''' to build locally).'
+    }
 }
 
 function Write-Step { param([string]$Message) Write-Host "==> $Message" -ForegroundColor Cyan }

@@ -8,6 +8,32 @@
 Provide a native **aarch64/arm64** Arch Linux container plus PowerShell 7 scripts to
 **build, start, stop, restart, remove** (and shell into) it.
 
+## Design principles
+
+These four principles are the project's architectural identity — preserve them in any change:
+
+1. **Configuration is the single source of truth.** `config/container.psd1` (merged with an
+   optional gitignored `container.local.psd1`) holds every name/path/flag; nothing is hardcoded
+   elsewhere. `Get-ArchConfig` derives and validates (`Confirm-ArchConfig`) on load.
+2. **Scripts own orchestration.** Conditional/idempotent "ensure" logic lives in the pwsh
+   scripts (the CLI is the API), not in editor task wiring — so it works the same from a
+   terminal, VS Code, or CI.
+3. **Editor tasks are thin wrappers.** VS Code tasks just invoke the scripts 1:1; no logic.
+4. **CI reuses the production scripts.** The workflow runs the same lint/test/build scripts a
+   developer runs, rather than re-implementing behaviour in YAML.
+
+## Reproducibility & supply chain
+
+- **Optimised for "latest Arch", not reproducible builds.** Each build does a full
+  `pacman -Syu`, so identical commits can produce different images over time — intentional for
+  a rolling-release dev container. If byte-for-byte reproducibility is ever needed, the
+  direction is pinned/snapshot pacman repositories.
+- **Rootfs integrity is corruption-detection, not tamper-proofing.** The ALARM rootfs is
+  fetched over HTTP and checked against an MD5 from the same mirror (no valid HTTPS cert on
+  `os.archlinuxarm.org`; ALARM does not sign the rootfs). This catches accidental corruption
+  but not an active MITM. CI runs `Build-ArchImage.ps1 -StrictChecksum` (fatal on failure);
+  local dev warns. Point `RootfsUrl` at a trusted HTTPS mirror to harden transport.
+
 ## Research findings
 
 - The official `library/archlinux` Docker image is **x86_64-only** — the Arch Wiki

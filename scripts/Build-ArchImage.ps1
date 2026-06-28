@@ -3,10 +3,20 @@
 .SYNOPSIS
     Produce the local arch-aarch64 image: build FROM scratch by downloading the Arch Linux ARM
     (aarch64) rootfs, OR, when config BaseImage is set, pull and tag that prebuilt image instead.
+.DESCRIPTION
+    SECURITY: the rootfs is fetched over plain HTTP and verified against an MD5 published by
+    the same mirror (os.archlinuxarm.org has no valid HTTPS cert, and ALARM does not sign the
+    rootfs). The checksum detects accidental corruption but NOT an active network attacker who
+    controls both the tarball and its .md5. For stronger transport security, override RootfsUrl
+    to a trusted HTTPS mirror in config/container.local.psd1. CI builds run with -StrictChecksum
+    so a verification failure is fatal there.
 .PARAMETER NoCache
     Build without using Docker's layer cache.
 .PARAMETER SkipChecksum
     Do not verify the downloaded tarball's MD5.
+.PARAMETER StrictChecksum
+    Make any checksum failure (retrieval, parse, or mismatch) fatal instead of a warning.
+    CI passes this explicitly; local dev defaults to a warning so a flaky mirror doesn't block.
 .PARAMETER ForceDownload
     Re-download the rootfs even if a cached copy exists.
 .EXAMPLE
@@ -18,6 +28,7 @@
 param(
     [switch]$NoCache,
     [switch]$SkipChecksum,
+    [switch]$StrictChecksum,
     [switch]$ForceDownload
 )
 
@@ -57,6 +68,8 @@ else {
 }
 
 if (-not $SkipChecksum) {
+    # -StrictChecksum (passed by CI) makes a failure fatal; local dev warns so a flaky mirror
+    # doesn't block work. See the SECURITY note above on what this does and doesn't protect.
     try {
         Write-Info 'Verifying MD5 checksum'
         # The .md5 endpoint is served as octet-stream, so .Content can be a byte[];
@@ -64,16 +77,17 @@ if (-not $SkipChecksum) {
         $md5Raw = Invoke-RestMethod -Uri "$($cfg.RootfsUrl).md5"
         if ($md5Raw -is [byte[]]) { $md5Raw = [System.Text.Encoding]::ASCII.GetString($md5Raw) }
         $expected = (([string]$md5Raw).Trim() -split '\s+')[0].ToLower()
-        # MD5 is the format ALARM publishes; this only matches the download, it is not
-        # a security control. (Rule excluded in config/PSScriptAnalyzerSettings.psd1.)
-        $actual   = (Get-FileHash -Path $tarballPath -Algorithm MD5).Hash.ToLower()
-        if ($expected -and $actual -ne $expected) {
-            throw "Checksum mismatch: expected $expected, got $actual. Re-run with -ForceDownload."
-        }
+        $actual = (Get-FileHash -Path $tarballPath -Algorithm MD5).Hash.ToLower()
+        if (-not $expected) { throw 'could not parse the published MD5.' }
+        if ($actual -ne $expected) { throw "mismatch: expected $expected, got $actual." }
         Write-Ok 'Checksum verified.'
     }
     catch {
-        Write-Warning "Checksum verification could not be completed: $($_.Exception.Message)"
+        $detail = "Checksum verification failed: $($_.Exception.Message)"
+        if ($StrictChecksum) {
+            throw "$detail (strict mode) Re-run with -ForceDownload, or -SkipChecksum to bypass."
+        }
+        Write-Warning "$detail Continuing (local dev); use -StrictChecksum to make this fatal."
     }
 }
 

@@ -7,8 +7,8 @@ BeforeAll {
 
 Describe '_Common.ps1 surface' {
     It 'defines helper <_>' -ForEach @(
-        'Get-ArchConfig', 'Invoke-Docker', 'Invoke-ContainerScript', 'Assert-ContainerRunning',
-        'Assert-Module', 'Assert-Command',
+        'Get-ArchConfig', 'Confirm-ArchConfig', 'Invoke-Docker', 'Invoke-ContainerScript',
+        'Assert-ContainerRunning', 'Assert-Module', 'Assert-Command',
         'Test-DockerRunning', 'Test-ContainerExists', 'Test-ContainerRunning',
         'Test-ImageExists', 'Test-VolumeExists',
         'Write-Step', 'Write-Info', 'Write-Ok', 'Write-Fail'
@@ -31,7 +31,7 @@ Describe 'Get-ArchConfig local override' -Skip:(Test-Path $localOverridePath) {
     BeforeAll {
         $script:LocalPath = Join-Path (Split-Path -Parent $PSScriptRoot) 'config/container.local.psd1'
     }
-    AfterAll {
+    AfterEach {
         Remove-Item $script:LocalPath -Force -ErrorAction SilentlyContinue
     }
 
@@ -41,6 +41,11 @@ Describe 'Get-ArchConfig local override' -Skip:(Test-Path $localOverridePath) {
         $cfg.Hostname      | Should -Be 'override-host'   # overridden
         $cfg.SshHostPort   | Should -Be 2299              # overridden
         $cfg.ContainerName | Should -Be 'arch-aarch64'    # untouched base value
+    }
+
+    It 'fails fast on an invalid override (SshHostPort out of range)' {
+        Set-Content -Path $script:LocalPath -Value "@{ SshHostPort = 99999 }"
+        { Get-ArchConfig } | Should -Throw -ExpectedMessage '*SshHostPort*'
     }
 }
 
