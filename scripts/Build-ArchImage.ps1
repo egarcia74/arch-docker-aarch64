@@ -1,7 +1,8 @@
 #Requires -Version 7
 <#
 .SYNOPSIS
-    Download the Arch Linux ARM (aarch64) rootfs and build the native arch-aarch64 image.
+    Produce the local arch-aarch64 image: build FROM scratch by downloading the Arch Linux ARM
+    (aarch64) rootfs, OR, when config BaseImage is set, pull and tag that prebuilt image instead.
 .PARAMETER NoCache
     Build without using Docker's layer cache.
 .PARAMETER SkipChecksum

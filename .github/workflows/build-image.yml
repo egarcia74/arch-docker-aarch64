@@ -57,12 +57,18 @@ jobs:
     needs: quality
     runs-on: ubuntu-24.04-arm # native arm64 hosted runner (free for public repos)
     env:
-      IMAGE: ghcr.io/${{ github.repository_owner }}/arch-docker-aarch64
+      IMAGE: ghcr.io/${{ github.repository }} # owner/name, follows renames & forks
     steps:
       - uses: actions/checkout@v4
       - name: Build image via the project's own build script
         shell: pwsh
         run: ./scripts/Build-ArchImage.ps1 # downloads ALARM rootfs, verifies, builds
+      - name: Resolve the local image tag from config (single source of truth)
+        id: cfg
+        shell: pwsh
+        run: |
+          . ./scripts/_Common.ps1
+          "tag=$((Get-ArchConfig).ImageName)" >> $env:GITHUB_OUTPUT
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -70,9 +76,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Tag & push (latest + dated)
+        env:
+          LOCAL: ${{ steps.cfg.outputs.tag }}
         run: |
           DATE=$(date -u +%Y%m%d)
-          docker tag arch-aarch64:latest "$IMAGE:latest"
-          docker tag arch-aarch64:latest "$IMAGE:$DATE"
+          docker tag "$LOCAL" "$IMAGE:latest"
+          docker tag "$LOCAL" "$IMAGE:$DATE"
           docker push "$IMAGE:latest"
           docker push "$IMAGE:$DATE"
