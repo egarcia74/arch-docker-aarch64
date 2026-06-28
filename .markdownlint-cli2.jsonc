@@ -1,0 +1,11 @@
+{
+  // markdownlint-cli2 config — read by both the CLI and the VS Code markdownlint extension.
+  "config": {
+    "default": true,
+    "MD013": false, // line-length: docs use long lines and wide tables
+    "MD033": false, // inline HTML: allowed where needed
+    "MD041": false // first-line-heading: not required for every file
+  },
+  "globs": ["**/*.md"],
+  "ignores": ["node_modules", ".remember", "docs/superpowers"]
+}

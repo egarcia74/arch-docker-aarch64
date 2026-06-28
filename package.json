@@ -1,0 +1,21 @@
+{
+  "name": "arch-docker-aarch64",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Dev tooling (markdown lint + format) for arch-docker-aarch64",
+  "scripts": {
+    "test": "pwsh -NoProfile -File ./scripts/Invoke-Tests.ps1",
+    "lint:ps": "pwsh -NoProfile -File ./scripts/Invoke-Lint.ps1",
+    "lint:md": "markdownlint-cli2",
+    "lint:md:fix": "markdownlint-cli2 --fix",
+    "lint": "npm run lint:ps && npm run lint:md",
+    "format": "prettier --write \"**/*.md\"",
+    "format:check": "prettier --check \"**/*.md\"",
+    "precommit": "pwsh -NoProfile -File ./scripts/Invoke-PreCommit.ps1",
+    "check": "npm run precommit"
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.15.0",
+    "prettier": "^3.4.2"
+  }
+}

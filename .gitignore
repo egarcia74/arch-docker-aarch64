@@ -1,0 +1,16 @@
+# Downloaded Arch Linux ARM rootfs (fetched by Build-ArchImage.ps1, do not commit)
+docker/ArchLinuxARM-aarch64-latest.tar.gz
+docker/*.tar.gz
+docker/*.md5
+
+# Node dev tooling (markdownlint-cli2, prettier)
+node_modules/
+
+# Pester test output
+tests/testresults.xml
+
+# Local config overrides (experiment without committing config/container.psd1)
+config/container.local.psd1
+
+# Session memory
+.remember/

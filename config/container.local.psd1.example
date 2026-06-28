@@ -1,0 +1,11 @@
+@{
+    # Local, GITIGNORED overrides for config/container.psd1.
+    # Copy this file to `container.local.psd1` (drop the .example) and set only the keys
+    # you want to change. Get-ArchConfig merges these over the base config (local wins),
+    # so you can experiment without touching or committing container.psd1.
+    #
+    # Examples:
+    #   StartSshOnBoot = $true     # auto-start sshd on container boot (needs a key + recreate)
+    #   SshHostPort    = 2250      # publish on a different localhost port (needs recreate)
+    #   Packages       = @('base-devel', 'git', 'vim', 'sudo', 'openssh', 'which', 'tmux')
+}

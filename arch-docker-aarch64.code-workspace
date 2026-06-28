@@ -1,0 +1,511 @@
+{
+  "folders": [
+    {
+      "name": "🏠 arch-docker-aarch64 (Root)",
+      "path": "."
+    },
+    {
+      "name": "🐳 Docker",
+      "path": "docker"
+    },
+    {
+      "name": "📜 Scripts",
+      "path": "scripts"
+    },
+    {
+      "name": "⚙️ Config",
+      "path": "config"
+    },
+    {
+      "name": "📚 Docs",
+      "path": "docs"
+    }
+  ],
+  "settings": {
+    // Terminal — default to PowerShell 7 on macOS/Windows
+    "terminal.integrated.defaultProfile.osx": "pwsh",
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "terminal.integrated.profiles.osx": {
+      "pwsh": {
+        "path": "pwsh",
+        "args": [
+          "-NoLogo"
+        ]
+      }
+    },
+    "terminal.integrated.profiles.windows": {
+      "PowerShell": {
+        "source": "PowerShell",
+        "args": [
+          "-NoLogo"
+        ]
+      }
+    },
+    "terminal.integrated.cwd": "${workspaceFolder}",
+    "powershell.cwd": "🏠 arch-docker-aarch64 (Root)",
+    // File associations
+    "files.associations": {
+      "Dockerfile": "dockerfile",
+      "*.psd1": "powershell",
+      "*.ps1": "powershell"
+    },
+    // PowerShell formatting
+    "powershell.codeFormatting.preset": "Stroustrup",
+    "powershell.codeFormatting.openBraceOnSameLine": false,
+    "powershell.integratedConsole.showOnStartup": false,
+    "powershell.scriptAnalysis.settingsPath": "config/PSScriptAnalyzerSettings.psd1",
+    // Editor / file hygiene
+    "editor.formatOnSave": true,
+    "editor.insertSpaces": true,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "[markdown]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true,
+      "editor.codeActionsOnSave": {
+        "source.fixAll.markdownlint": "always"
+      }
+    },
+    // Hide / exclude generated + session artifacts
+    "search.exclude": {
+      "**/docker/*.tar.gz": true,
+      "**/docker/*.md5": true,
+      "**/.remember/**": true
+    },
+    "files.exclude": {
+      "**/.remember": true
+    },
+    "explorer.compactFolders": false
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.powershell",
+      "ms-azuretools.vscode-docker",
+      "vscode-icons-team.vscode-icons",
+      "esbenp.prettier-vscode",
+      "davidanson.vscode-markdownlint"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Arch: Build Image",
+        "detail": "Download the ALARM aarch64 rootfs and build arch-aarch64:latest",
+        "icon": {
+          "id": "package",
+          "color": "terminal.ansiBlue"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Build-ArchImage.ps1' ${input:buildFlags}"
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated"
+        }
+      },
+      {
+        "label": "Arch: Start",
+        "detail": "Create (with persistent home volume) or start the container",
+        "icon": {
+          "id": "play",
+          "color": "terminal.ansiGreen"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Start-ArchContainer.ps1'"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated"
+        }
+      },
+      {
+        "label": "Arch: Stop",
+        "detail": "Stop the running container",
+        "icon": {
+          "id": "debug-stop",
+          "color": "terminal.ansiRed"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Stop-ArchContainer.ps1'"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated"
+        }
+      },
+      {
+        "label": "Arch: Restart",
+        "detail": "Restart the container",
+        "icon": {
+          "id": "refresh",
+          "color": "terminal.ansiYellow"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Restart-ArchContainer.ps1'"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated"
+        }
+      },
+      {
+        "label": "Arch: Remove",
+        "detail": "Remove the container; optionally the image and/or persistent data volume",
+        "icon": {
+          "id": "trash",
+          "color": "terminal.ansiRed"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Remove-ArchContainer.ps1' ${input:removeFlags}"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated"
+        }
+      },
+      {
+        "label": "Arch: Shell",
+        "detail": "Open an interactive shell in the running container as the dev user",
+        "icon": {
+          "id": "terminal",
+          "color": "terminal.ansiCyan"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Enter-ArchContainer.ps1'"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated",
+          "focus": true
+        }
+      },
+      {
+        "label": "Arch: Status",
+        "detail": "Show container and volume state for arch-aarch64",
+        "icon": {
+          "id": "pulse",
+          "color": "terminal.ansiCyan"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Get-ArchStatus.ps1'"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated"
+        }
+      },
+      {
+        "label": "Arch: Enable SSH",
+        "detail": "Install your public key + start sshd; print the ssh command",
+        "icon": {
+          "id": "remote",
+          "color": "terminal.ansiGreen"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Enable-ArchSsh.ps1'"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated"
+        }
+      },
+      {
+        "label": "Arch: Run Sample",
+        "detail": "Run a use-case init script (dotnet / rust / go / build-tools / ssh) in the container",
+        "icon": {
+          "id": "tools",
+          "color": "terminal.ansiBlue"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Invoke-ArchSample.ps1' -Name ${input:sampleName}"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated"
+        }
+      },
+      {
+        "label": "Docs: README",
+        "detail": "Open the project README",
+        "icon": {
+          "id": "book",
+          "color": "terminal.ansiGreen"
+        },
+        "type": "process",
+        "command": "open",
+        "args": [
+          "${workspaceFolder}/README.md"
+        ],
+        "windows": {
+          "command": "cmd",
+          "args": [
+            "/c",
+            "start",
+            "",
+            "${workspaceFolder}\\README.md"
+          ]
+        },
+        "linux": {
+          "command": "xdg-open",
+          "args": [
+            "${workspaceFolder}/README.md"
+          ]
+        },
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "never",
+          "panel": "shared"
+        }
+      },
+      {
+        "label": "Docs: Design Spec",
+        "detail": "Open the design document",
+        "icon": {
+          "id": "book",
+          "color": "terminal.ansiYellow"
+        },
+        "type": "process",
+        "command": "open",
+        "args": [
+          "${workspaceFolder}/docs/design.md"
+        ],
+        "windows": {
+          "command": "cmd",
+          "args": [
+            "/c",
+            "start",
+            "",
+            "${workspaceFolder}\\docs\\design.md"
+          ]
+        },
+        "linux": {
+          "command": "xdg-open",
+          "args": [
+            "${workspaceFolder}/docs/design.md"
+          ]
+        },
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "never",
+          "panel": "shared"
+        }
+      },
+      {
+        "label": "Dev: Test (Pester)",
+        "detail": "Run the Pester test suite in tests/",
+        "icon": {
+          "id": "beaker",
+          "color": "terminal.ansiGreen"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Invoke-Tests.ps1'"
+        ],
+        "group": {
+          "kind": "test",
+          "isDefault": true
+        },
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated"
+        }
+      },
+      {
+        "label": "Dev: Lint PowerShell",
+        "detail": "Run PSScriptAnalyzer over scripts/ with project settings",
+        "icon": {
+          "id": "verified",
+          "color": "terminal.ansiBlue"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Invoke-Lint.ps1'"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated"
+        }
+      },
+      {
+        "label": "Dev: Format Markdown",
+        "detail": "prettier + markdownlint-cli2 (Format writes fixes; Check is read-only)",
+        "icon": {
+          "id": "markdown",
+          "color": "terminal.ansiBlue"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Format-Markdown.ps1' ${input:mdMode}"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated"
+        }
+      },
+      {
+        "label": "Dev: Pre-Commit",
+        "detail": "Quality gate: PSScriptAnalyzer + Pester + Markdown lint/format check",
+        "icon": {
+          "id": "check-all",
+          "color": "terminal.ansiGreen"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Invoke-PreCommit.ps1'"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated"
+        }
+      }
+    ],
+    "inputs": [
+      {
+        "id": "sampleName",
+        "description": "Use-case sample to run in the container",
+        "type": "pickString",
+        "options": ["ssh", "dotnet", "rust", "go", "build-tools"],
+        "default": "build-tools"
+      },
+      {
+        "id": "mdMode",
+        "description": "Markdown tooling mode",
+        "type": "pickString",
+        "options": [
+          {
+            "label": "Format (write fixes)",
+            "value": ""
+          },
+          {
+            "label": "Check (read-only, fail on issues)",
+            "value": "-Check"
+          }
+        ],
+        "default": ""
+      },
+      {
+        "id": "buildFlags",
+        "description": "Image build options",
+        "type": "pickString",
+        "options": [
+          {
+            "label": "Build (use cache + cached rootfs)",
+            "value": ""
+          },
+          {
+            "label": "No cache (rebuild layers)",
+            "value": "-NoCache"
+          },
+          {
+            "label": "Force re-download rootfs",
+            "value": "-ForceDownload"
+          },
+          {
+            "label": "Clean build (no cache + re-download)",
+            "value": "-NoCache -ForceDownload"
+          }
+        ],
+        "default": ""
+      },
+      {
+        "id": "removeFlags",
+        "description": "What to remove",
+        "type": "pickString",
+        "options": [
+          {
+            "label": "Container only (keep image + data volume)",
+            "value": ""
+          },
+          {
+            "label": "Container + image (keep data volume)",
+            "value": "-RemoveImage"
+          },
+          {
+            "label": "Everything incl. data volume (DESTRUCTIVE)",
+            "value": "-RemoveVolume -RemoveImage -Force"
+          }
+        ],
+        "default": ""
+      }
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "PowerShell: Interactive Session",
+        "type": "PowerShell",
+        "request": "launch",
+        "cwd": "${workspaceFolder}",
+        "script": ""
+      }
+    ]
+  }
+}
