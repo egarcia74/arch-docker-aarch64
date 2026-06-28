@@ -102,9 +102,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Smoke test the published image
+        env:
+          SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          docker run --rm --user dev --entrypoint bash "$IMAGE:latest" -lc '
+          TAG="sha-${SHA:0:7}" # test the exact image this commit produced, not :latest
+          docker run --rm --user dev --entrypoint bash "$IMAGE:$TAG" -lc '
             set -e
             [ "$(uname -m)" = aarch64 ]
             id dev >/dev/null

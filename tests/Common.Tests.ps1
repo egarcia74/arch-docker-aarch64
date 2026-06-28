@@ -49,6 +49,37 @@ Describe 'Get-ArchConfig local override' -Skip:(Test-Path $localOverridePath) {
     }
 }
 
+Describe 'Confirm-ArchConfig (direct)' {
+    BeforeAll {
+        function New-ValidConfig {
+            @{
+                ImageName     = 'arch-aarch64:latest'; BaseImage = ''; ContainerName = 'arch-aarch64'
+                Hostname      = 'arch-aarch64'; VolumeName = 'arch-aarch64-home'; Platform = 'linux/arm64'
+                RootfsUrl     = 'http://example.test/x.tar.gz'; Packages = @('git'); DevUser = 'dev'
+                SshHostPort   = 22; StartSshOnBoot = $false
+            }
+        }
+    }
+
+    It 'accepts a valid config' {
+        { Confirm-ArchConfig (New-ValidConfig) } | Should -Not -Throw
+    }
+
+    It 'rejects <case>' -ForEach @(
+        @{ case = 'bad port';            mutate = { param($c) $c.SshHostPort = 99999 };    match = '*SshHostPort*' }
+        @{ case = 'bad username';        mutate = { param($c) $c.DevUser = '0bad' };       match = '*DevUser*' }
+        @{ case = 'packages not array';  mutate = { param($c) $c.Packages = 'git' };       match = '*Packages*' }
+        @{ case = 'bad URI';             mutate = { param($c) $c.RootfsUrl = 'not a uri' }; match = '*RootfsUrl*' }
+        @{ case = 'empty ImageName';     mutate = { param($c) $c.ImageName = '' };          match = '*ImageName*' }
+        @{ case = 'invalid Hostname';    mutate = { param($c) $c.Hostname = 'bad_host!' };  match = '*Hostname*' }
+        @{ case = 'missing key';         mutate = { param($c) $c.Remove('VolumeName') };    match = '*VolumeName*' }
+    ) {
+        $cfg = New-ValidConfig
+        & $mutate $cfg
+        { Confirm-ArchConfig $cfg } | Should -Throw -ExpectedMessage $match
+    }
+}
+
 Describe 'Invoke-Docker' {
     # Shadow the native docker exe with a function that sets a controllable exit code,
     # so the exit-code-guard branch can be tested without Docker installed/running.

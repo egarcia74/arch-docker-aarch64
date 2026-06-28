@@ -125,9 +125,11 @@ in npm — those are the domain CLI (pwsh scripts + `Arch:` tasks), not generic 
 
 `.github/workflows/build-image.yml` runs the same quality gate (PSScriptAnalyzer + Pester +
 markdown) and then **builds the image natively on an `aarch64` GitHub runner** (no QEMU) and
-publishes it to GHCR as `ghcr.io/egarcia74/arch-docker-aarch64:latest` (+ a dated tag). It
-triggers weekly (rolling-release refresh), on changes to the image inputs, and on demand. The
-build reuses `scripts/Build-ArchImage.ps1`, so CI exercises the real build script.
+publishes it to GHCR as `ghcr.io/egarcia74/arch-docker-aarch64:latest` (plus a dated tag and a
+`sha-<short>` commit tag). It triggers weekly (rolling-release refresh), on changes to the
+image inputs, and on demand. The build reuses `scripts/Build-ArchImage.ps1`, so CI exercises
+the real build script, and a final **smoke** job pulls the published image and asserts core
+invariants (aarch64, dev user, sudo, packages, SSH, entrypoint).
 
 **Fast path — pull instead of build.** Set `BaseImage` to the published image (in
 `container.local.psd1` to keep it uncommitted) and `Build` pulls + tags it instead of doing

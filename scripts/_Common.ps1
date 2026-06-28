@@ -44,6 +44,20 @@ function Confirm-ArchConfig {
     foreach ($key in $script:RequiredConfigKeys) {
         if (-not $Config.ContainsKey($key)) { throw "Config: required key '$key' is missing." }
     }
+    foreach ($key in 'ImageName', 'ContainerName', 'Hostname', 'VolumeName') {
+        if ($Config[$key] -isnot [string] -or [string]::IsNullOrWhiteSpace($Config[$key])) {
+            throw "Config: $key must be a non-empty string."
+        }
+    }
+    # Docker object names / hostnames: alphanumeric start, then a restricted set.
+    foreach ($key in 'ContainerName', 'VolumeName') {
+        if ($Config[$key] -notmatch '^[a-zA-Z0-9][\w.-]*$') {
+            throw "Config: $key '$($Config[$key])' is not a valid Docker name."
+        }
+    }
+    if ($Config.Hostname -notmatch '^[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?$') {
+        throw "Config: Hostname '$($Config.Hostname)' is not a valid hostname."
+    }
     if ($Config.Platform -notmatch '^[\w.-]+/[\w./-]+$') {
         throw "Config: Platform '$($Config.Platform)' is not a valid '<os>/<arch>' value."
     }
