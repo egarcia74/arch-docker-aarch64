@@ -4,12 +4,12 @@
     Produce the local arch-aarch64 image: build FROM scratch by downloading the Arch Linux ARM
     (aarch64) rootfs, OR, when config BaseImage is set, pull and tag that prebuilt image instead.
 .DESCRIPTION
-    SECURITY: the rootfs is fetched over plain HTTP and verified against an MD5 published by
-    the same mirror (os.archlinuxarm.org has no valid HTTPS cert, and ALARM does not sign the
-    rootfs). The checksum detects accidental corruption but NOT an active network attacker who
-    controls both the tarball and its .md5. For stronger transport security, override RootfsUrl
-    to a trusted HTTPS mirror in config/container.local.psd1. CI builds run with -StrictChecksum
-    so a verification failure is fatal there.
+    SECURITY: the rootfs defaults to a trusted HTTPS mirror (fl.us.mirror.archlinuxarm.org,
+    valid Let's Encrypt cert) and is verified against an MD5 from that same mirror. HTTPS
+    authenticates transport (defeats passive eavesdrop + cert-forging MITM); the MD5 catches
+    corruption. Residual trust is in the mirror operator - ALARM does not sign the rootfs
+    tarball, and the canonical origin os.archlinuxarm.org is plain HTTP with an invalid cert.
+    CI builds run with -StrictChecksum so a verification failure is fatal there.
 .PARAMETER NoCache
     Build without using Docker's layer cache.
 .PARAMETER SkipChecksum

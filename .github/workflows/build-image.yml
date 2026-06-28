@@ -20,6 +20,10 @@ concurrency:
 permissions:
   contents: read
   packages: write # push to GHCR
+  id-token: write # keyless cosign image signing (OIDC)
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }} # GHCR repo (owner/name); follows renames & forks
 
 jobs:
   # Gate: the same lint + tests + markdown checks as the local pre-commit.
@@ -56,8 +60,6 @@ jobs:
   build:
     needs: quality
     runs-on: ubuntu-24.04-arm # native arm64 hosted runner (free for public repos)
-    env:
-      IMAGE: ghcr.io/${{ github.repository }} # owner/name, follows renames & forks
     steps:
       - uses: actions/checkout@v4
       - name: Build image via the project's own build script
@@ -69,6 +71,24 @@ jobs:
         run: |
           . ./scripts/_Common.ps1
           "tag=$((Get-ArchConfig).ImageName)" >> $env:GITHUB_OUTPUT
+      - name: Scan image for vulnerabilities (Trivy, fixable HIGH/CRITICAL)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.cfg.outputs.tag }} # the locally built image
+          format: table
+          output: trivy.txt
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true # only surface CVEs that actually have a fix available
+          exit-code: "0" # informational: surfaced in the run summary, doesn't block the build
+      - name: Publish Trivy findings to the run summary
+        if: always()
+        run: |
+          {
+            echo '### Trivy — fixable HIGH/CRITICAL CVEs'
+            echo '```'
+            cat trivy.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -86,14 +106,21 @@ jobs:
             docker tag "$LOCAL" "$IMAGE:$tag"
             docker push "$IMAGE:$tag"
           done
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+      - name: Sign the published image by digest (keyless)
+        run: |
+          # Sign the immutable digest: all of latest/date/sha- tags point to it, so one
+          # signature covers them all (smoke verifies via the sha- tag, which resolves to it).
+          DIGEST=$(docker inspect --format '{{ index .RepoDigests 0 }}' "$IMAGE:latest")
+          echo "signing $DIGEST"
+          cosign sign --yes "$DIGEST"
 
   # Pull the just-published image and assert core invariants — catches regressions that
   # lint and Pester cannot (the actual built image, on a native arm64 runner).
   smoke:
     needs: build
     runs-on: ubuntu-24.04-arm
-    env:
-      IMAGE: ghcr.io/${{ github.repository }}
     steps:
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -101,6 +128,16 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+      - name: Verify the image signature (keyless, from this repo's CI)
+        env:
+          SHA: ${{ github.sha }}
+        run: |
+          cosign verify "$IMAGE:sha-${SHA:0:7}" \
+            --certificate-identity-regexp "^https://github.com/${{ github.repository }}/" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com >/dev/null
+          echo "signature verified"
       - name: Smoke test the published image
         env:
           SHA: ${{ github.sha }}

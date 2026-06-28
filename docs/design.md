@@ -28,11 +28,10 @@ These four principles are the project's architectural identity — preserve them
   `pacman -Syu`, so identical commits can produce different images over time — intentional for
   a rolling-release dev container. If byte-for-byte reproducibility is ever needed, the
   direction is pinned/snapshot pacman repositories.
-- **Rootfs integrity is corruption-detection, not tamper-proofing.** The ALARM rootfs is
-  fetched over HTTP and checked against an MD5 from the same mirror (no valid HTTPS cert on
-  `os.archlinuxarm.org`; ALARM does not sign the rootfs). This catches accidental corruption
-  but not an active MITM. CI runs `Build-ArchImage.ps1 -StrictChecksum` (fatal on failure);
-  local dev warns. Point `RootfsUrl` at a trusted HTTPS mirror to harden transport.
+- **Supply chain:** the rootfs is fetched over a trusted HTTPS mirror and MD5-checked
+  (`-StrictChecksum` is fatal in CI), packages are pacman-signature-verified, and the published
+  image is cosign-signed + Trivy-scanned. **[SECURITY.md](../SECURITY.md)** is the canonical
+  source for the threat model, full posture, and image verification.
 
 ## Research findings
 
@@ -85,7 +84,8 @@ arch-docker-aarch64/
 │   ├── container.local.psd1.example  # template for gitignored local overrides
 │   └── PSScriptAnalyzerSettings.psd1
 ├── package.json                    # npm wrappers for quality commands (test/lint/format)
-├── .github/workflows/build-image.yml  # CI: gate + native arm64 build → GHCR
+├── .github/workflows/build-image.yml  # CI: gate + build → Trivy scan → GHCR → cosign sign → smoke
+├── SECURITY.md                     # threat model, posture, image-verification
 ├── .markdownlint-cli2.jsonc / .prettierrc.json / .prettierignore
 └── docs/design.md
 ```

@@ -24,8 +24,11 @@
     SupplementPackages = $false
     # MountPath is derived in Get-ArchConfig as /home/<DevUser> (the persisted home).
 
-    # Official Arch Linux ARM (ALARM) aarch64 root filesystem.
-    RootfsUrl     = 'http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz'
+    # Arch Linux ARM (ALARM) aarch64 root filesystem, over a trusted HTTPS mirror (valid
+    # Let's Encrypt cert) for transport security. The canonical origin
+    # (http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz) is plain HTTP with an
+    # invalid cert; override RootfsUrl in container.local.psd1 if this mirror is unavailable.
+    RootfsUrl     = 'https://fl.us.mirror.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz'
 
     # Packages installed into the image (general dev sandbox).
     Packages      = @('base-devel', 'git', 'vim', 'sudo', 'openssh', 'which')
