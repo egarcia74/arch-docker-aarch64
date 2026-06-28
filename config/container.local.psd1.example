@@ -9,4 +9,7 @@
     #   SshHostPort    = 2250      # publish on a different localhost port (needs recreate)
     #   Packages       = @('base-devel', 'git', 'vim', 'sudo', 'openssh', 'which', 'tmux')
     #   BaseImage      = 'ghcr.io/egarcia74/arch-docker-aarch64:latest'  # pull instead of build
+    #
+    # NOTE: with BaseImage set, Packages/DevUser are ignored (already baked into the pulled
+    # image). To customise Packages, leave BaseImage empty so the image is built locally.
 }

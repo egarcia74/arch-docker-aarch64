@@ -71,7 +71,10 @@ names (Pester treats it as a data template).
 - **`BaseImage`** (default `''`): when set, `Build-ArchImage.ps1` pulls + tags that image as
   `ImageName` and returns early (no FROM-scratch build). Must be a fully-built compatible
   image (dev user + entrypoint), e.g. the GHCR image — not a bare Arch rootfs. The rest of the
-  lifecycle is unchanged since it references `ImageName`.
+  lifecycle is unchanged since it references `ImageName`. **Caveat:** build-time config
+  (`Packages`, `DevUser`, passed as build-args) is ignored when `BaseImage` is set — it's
+  baked into the prebuilt image; only runtime config (`Hostname`/ports/`StartSshOnBoot`/volume,
+  applied by `Start`) still takes effect.
 - **`StartSshOnBoot`** (default `$false`): when true, `Start` passes `--env ARCH_START_SSHD=1`
   and the image entrypoint (`docker/entrypoint.sh`, derives home from `ENV ARCH_DEV_HOME`)
   starts `sshd` on boot if a key is present, then `exec sleep infinity`. Creation-time

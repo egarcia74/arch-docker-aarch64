@@ -6,6 +6,9 @@
     # is equivalent to this project's build — e.g. 'ghcr.io/egarcia74/arch-docker-aarch64:latest'
     # — to pull and use it directly, skipping the ~784 MB rootfs download + build. Must be a
     # fully-built compatible image (dev user + entrypoint), NOT a bare Arch rootfs.
+    # CAVEAT: build-time settings (Packages, DevUser) are baked into a prebuilt image, so they
+    # do NOT apply when BaseImage is set — only runtime settings (Hostname, SshHostPort,
+    # StartSshOnBoot, volume) still take effect via Start. Leave BaseImage empty to apply Packages.
     BaseImage     = ''
 
     ContainerName = 'arch-aarch64'
