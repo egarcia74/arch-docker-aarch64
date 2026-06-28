@@ -27,6 +27,18 @@ $ErrorActionPreference = 'Stop'
 $cfg = Get-ArchConfig
 Test-DockerRunning
 
+if ($cfg.BaseImage) {
+    # Fast path: pull a prebuilt, fully-built image (e.g. the project's GHCR image) and tag
+    # it as our local image name, skipping the FROM-scratch rootfs download + build. The rest
+    # of the lifecycle (Start/Enter/Status) keeps using $cfg.ImageName unchanged.
+    Write-Step "Using prebuilt base image '$($cfg.BaseImage)' (skipping the local build)"
+    docker pull --platform $cfg.Platform $cfg.BaseImage
+    if ($LASTEXITCODE -ne 0) { throw "Failed to pull base image '$($cfg.BaseImage)'." }
+    Invoke-Docker -Arguments @('tag', $cfg.BaseImage, $cfg.ImageName) -FailMessage 'Failed to tag base image.'
+    Write-Ok "Tagged '$($cfg.BaseImage)' as '$($cfg.ImageName)'."
+    return
+}
+
 $dockerDir   = Join-Path $RepoRoot 'docker'
 $tarballName = Split-Path -Leaf ([Uri]$cfg.RootfsUrl).AbsolutePath
 $tarballPath = Join-Path $dockerDir $tarballName

@@ -68,6 +68,10 @@ names (Pester treats it as a data template).
 - **Local overrides:** `Get-ArchConfig` merges an optional gitignored
   `config/container.local.psd1` over the base (local keys win), so settings can be changed
   without touching/committing the base. `MountPath` is derived after the merge.
+- **`BaseImage`** (default `''`): when set, `Build-ArchImage.ps1` pulls + tags that image as
+  `ImageName` and returns early (no FROM-scratch build). Must be a fully-built compatible
+  image (dev user + entrypoint), e.g. the GHCR image — not a bare Arch rootfs. The rest of the
+  lifecycle is unchanged since it references `ImageName`.
 - **`StartSshOnBoot`** (default `$false`): when true, `Start` passes `--env ARCH_START_SSHD=1`
   and the image entrypoint (`docker/entrypoint.sh`, derives home from `ENV ARCH_DEV_HOME`)
   starts `sshd` on boot if a key is present, then `exec sleep infinity`. Creation-time

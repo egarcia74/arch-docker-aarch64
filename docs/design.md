@@ -81,7 +81,9 @@ arch-docker-aarch64/
 ### config/container.psd1 (+ local overrides)
 
 Single source of truth: image/container/volume names, hostname, platform, rootfs URL,
-package list, dev user, `SshHostPort`, `StartSshOnBoot` (mount path is derived from dev user).
+package list, dev user, `SshHostPort`, `StartSshOnBoot`, `BaseImage` (mount path is derived
+from dev user). `BaseImage` (when set) makes Build pull + tag a prebuilt image instead of
+building FROM scratch — a fast path that skips the rootfs download.
 Both the build script (build-args) and the runtime scripts read from here. The container is
 created with `--hostname` (stable `dev@<Hostname>` prompt) and `--publish 127.0.0.1:<port>:22`.
 `Get-ArchConfig` merges an optional gitignored `container.local.psd1` over the base (local

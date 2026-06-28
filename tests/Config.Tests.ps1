@@ -12,7 +12,7 @@ Describe 'config/container.psd1' {
     }
 
     It 'defines required key <_>' -ForEach @(
-        'ImageName', 'ContainerName', 'Hostname', 'VolumeName', 'Platform',
+        'ImageName', 'BaseImage', 'ContainerName', 'Hostname', 'VolumeName', 'Platform',
         'RootfsUrl', 'Packages', 'DevUser', 'SshHostPort', 'StartSshOnBoot'
     ) {
         $Config.ContainsKey($_) | Should -BeTrue

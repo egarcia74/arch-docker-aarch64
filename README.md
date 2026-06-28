@@ -129,6 +129,17 @@ publishes it to GHCR as `ghcr.io/egarcia74/arch-docker-aarch64:latest` (+ a date
 triggers weekly (rolling-release refresh), on changes to the image inputs, and on demand. The
 build reuses `scripts/Build-ArchImage.ps1`, so CI exercises the real build script.
 
+**Fast path — pull instead of build.** Set `BaseImage` to the published image (in
+`container.local.psd1` to keep it uncommitted) and `Build` pulls + tags it instead of doing
+the FROM-scratch build, skipping the ~784 MB rootfs download:
+
+```pwsh
+# config/container.local.psd1
+@{ BaseImage = 'ghcr.io/egarcia74/arch-docker-aarch64:latest' }
+```
+
+`Start`/`Enter`/`Status` are unchanged — they keep using the local `ImageName` tag.
+
 ## Persistence
 
 | What                                                | Where                                    | Survives stop/start | Survives `remove` |

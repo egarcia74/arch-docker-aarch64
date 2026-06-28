@@ -8,4 +8,5 @@
     #   StartSshOnBoot = $true     # auto-start sshd on container boot (needs a key + recreate)
     #   SshHostPort    = 2250      # publish on a different localhost port (needs recreate)
     #   Packages       = @('base-devel', 'git', 'vim', 'sudo', 'openssh', 'which', 'tmux')
+    #   BaseImage      = 'ghcr.io/egarcia74/arch-docker-aarch64:latest'  # pull instead of build
 }
