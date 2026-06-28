@@ -72,7 +72,7 @@ jobs:
           . ./scripts/_Common.ps1
           "tag=$((Get-ArchConfig).ImageName)" >> $env:GITHUB_OUTPUT
       - name: Scan image for vulnerabilities (Trivy, fixable HIGH/CRITICAL)
-        uses: aquasecurity/trivy-action@v0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ steps.cfg.outputs.tag }} # the locally built image
           format: table
