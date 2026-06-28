@@ -134,6 +134,11 @@ users — not terminal/CI).
   (persists in the volume — passed as a positional arg to `bash -s`, never interpolated), and
   starts `sshd`. No systemd, so `sshd` does not survive a container stop — re-run the script
   (it is idempotent). See `docs/use-cases.md`.
+- **Host-key persistence:** both SSH start paths (`entrypoint.sh` for boot, `setup-ssh.sh` for
+  manual) persist `/etc/ssh/ssh_host_*` into the home volume (`~/.ssh-hostkeys`) and restore
+  them on start, so the server identity (and the client's `known_hosts`) survives a container
+  remove+recreate. Only `-RemoveVolume` resets it; `Remove-ArchContainer.ps1` then prints the
+  `ssh-keygen -R` reminder. The keys live in the volume; `/etc/ssh` is just the working copy.
 
 ## Out of scope (don't add unless asked)
 

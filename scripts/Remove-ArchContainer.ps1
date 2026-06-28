@@ -47,6 +47,10 @@ if ($RemoveVolume) {
             'Confirm volume removal')) {
         Invoke-Docker -Arguments @('volume', 'rm', $cfg.VolumeName) -FailMessage 'Failed to remove volume.'
         Write-Ok 'Volume removed.'
+        # The persisted SSH host identity lived in that volume, so a recreated container
+        # gets a new host key. Remind how to clear the now-stale known_hosts entry.
+        Write-Info "SSH host identity was reset. If you re-enable SSH, clear the old key on your host:"
+        Write-Info "  ssh-keygen -R '[127.0.0.1]:$($cfg.SshHostPort)'"
     }
     else {
         Write-Info 'Volume kept.'

@@ -65,6 +65,10 @@ Notes:
   uncommitted, or `container.psd1`) and recreate the container. The entrypoint then starts
   `sshd` on every boot — including after a `stop`/`start` — provided a key is present.
 - The port is bound to `127.0.0.1`, so it is not exposed beyond your Mac.
+- **Stable host identity.** The sshd host keys are persisted in the home volume
+  (`~/.ssh-hostkeys`) and restored on each start, so `known_hosts` stays valid across a
+  container remove+recreate. Only `Remove-ArchContainer.ps1 -RemoveVolume` resets the identity
+  — and it prints the `ssh-keygen -R '[127.0.0.1]:<port>'` command to clear the stale entry.
 
 ## Sample init scripts
 
