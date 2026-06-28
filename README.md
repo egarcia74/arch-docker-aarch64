@@ -1,5 +1,7 @@
 # arch-docker-aarch64
 
+[![build-image](https://github.com/egarcia74/arch-docker-aarch64/actions/workflows/build-image.yml/badge.svg)](https://github.com/egarcia74/arch-docker-aarch64/actions/workflows/build-image.yml)
+
 A native **aarch64/arm64 Arch Linux** development container for Apple Silicon
 with PowerShell 7 scripts to build, start, stop, restart, remove,
 and shell into it.
@@ -118,6 +120,14 @@ Requires `Pester` 5+ and `PSScriptAnalyzer` (`Install-Module Pester, PSScriptAna
 and Node.js for the markdown tools. PSScriptAnalyzer is configured by
 `config/PSScriptAnalyzerSettings.psd1`. The Docker lifecycle is intentionally **not** wrapped
 in npm — those are the domain CLI (pwsh scripts + `Arch:` tasks), not generic dev commands.
+
+## Continuous integration
+
+`.github/workflows/build-image.yml` runs the same quality gate (PSScriptAnalyzer + Pester +
+markdown) and then **builds the image natively on an `aarch64` GitHub runner** (no QEMU) and
+publishes it to GHCR as `ghcr.io/egarcia74/arch-docker-aarch64:latest` (+ a dated tag). It
+triggers weekly (rolling-release refresh), on changes to the image inputs, and on demand. The
+build reuses `scripts/Build-ArchImage.ps1`, so CI exercises the real build script.
 
 ## Persistence
 

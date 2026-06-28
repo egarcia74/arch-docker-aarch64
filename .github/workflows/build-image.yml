@@ -1,0 +1,78 @@
+name: build-image
+
+on:
+  schedule:
+    - cron: "17 6 * * 1" # weekly Mon 06:17 UTC — refresh the rolling-release image
+  push:
+    branches: [main]
+    paths: # only when something that affects the image changes
+      - "docker/**"
+      - "scripts/Build-ArchImage.ps1"
+      - "scripts/_Common.ps1"
+      - "config/container.psd1"
+      - ".github/workflows/build-image.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: build-image-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write # push to GHCR
+
+jobs:
+  # Gate: the same lint + tests + markdown checks as the local pre-commit.
+  quality:
+    runs-on: ubuntu-latest # no Docker/arm needed — pure pwsh + node
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Install PowerShell modules
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -MinimumVersion 5.0 -Scope CurrentUser -Force
+          Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+      - name: Lint (PSScriptAnalyzer)
+        shell: pwsh
+        run: ./scripts/Invoke-Lint.ps1
+      - name: Test (Pester)
+        shell: pwsh
+        run: ./scripts/Invoke-Tests.ps1 -CI
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pester-results
+          path: tests/testresults.xml
+          if-no-files-found: ignore
+      - name: Markdown check (prettier + markdownlint)
+        shell: pwsh
+        run: ./scripts/Format-Markdown.ps1 -Check
+
+  # Build natively on aarch64 (no QEMU) and publish to GHCR.
+  build:
+    needs: quality
+    runs-on: ubuntu-24.04-arm # native arm64 hosted runner (free for public repos)
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/arch-docker-aarch64
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image via the project's own build script
+        shell: pwsh
+        run: ./scripts/Build-ArchImage.ps1 # downloads ALARM rootfs, verifies, builds
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tag & push (latest + dated)
+        run: |
+          DATE=$(date -u +%Y%m%d)
+          docker tag arch-aarch64:latest "$IMAGE:latest"
+          docker tag arch-aarch64:latest "$IMAGE:$DATE"
+          docker push "$IMAGE:latest"
+          docker push "$IMAGE:$DATE"

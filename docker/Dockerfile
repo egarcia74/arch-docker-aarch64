@@ -10,6 +10,10 @@
 FROM scratch
 ADD ArchLinuxARM-aarch64-latest.tar.gz /
 
+# Links the published GHCR package back to the repo (and shows up in image metadata).
+LABEL org.opencontainers.image.source="https://github.com/egarcia74/arch-docker-aarch64" \
+      org.opencontainers.image.description="Native aarch64 Arch Linux ARM dev container"
+
 # Packages and the non-root user name come from config/container.psd1 via the
 # build script, so this Dockerfile stays in sync with one source of truth.
 ARG PACKAGES="base-devel git vim sudo openssh which"

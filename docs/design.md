@@ -59,6 +59,7 @@ arch-docker-aarch64/
 │   ├── container.local.psd1.example  # template for gitignored local overrides
 │   └── PSScriptAnalyzerSettings.psd1
 ├── package.json                    # npm wrappers for quality commands (test/lint/format)
+├── .github/workflows/build-image.yml  # CI: gate + native arm64 build → GHCR
 ├── .markdownlint-cli2.jsonc / .prettierrc.json / .prettierignore
 └── docs/design.md
 ```
