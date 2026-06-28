@@ -13,7 +13,7 @@ $script:ConfigPath = Join-Path $script:RepoRoot 'config/container.psd1'
 # enumerated by tests/Config.Tests.ps1 (which dot-sources this file to read it).
 $script:RequiredConfigKeys = @(
     'ImageName', 'BaseImage', 'ContainerName', 'Hostname', 'VolumeName', 'Platform',
-    'RootfsUrl', 'Packages', 'DevUser', 'SshHostPort', 'StartSshOnBoot'
+    'RootfsUrl', 'Packages', 'DevUser', 'SshHostPort', 'StartSshOnBoot', 'SupplementPackages'
 )
 
 function Get-ArchConfig {
@@ -75,6 +75,9 @@ function Confirm-ArchConfig {
     }
     if ($Config.StartSshOnBoot -isnot [bool]) {
         throw 'Config: StartSshOnBoot must be a boolean ($true/$false).'
+    }
+    if ($Config.SupplementPackages -isnot [bool]) {
+        throw 'Config: SupplementPackages must be a boolean ($true/$false).'
     }
     if ($Config.BaseImage -isnot [string]) {
         throw 'Config: BaseImage must be a string ('''' to build locally).'

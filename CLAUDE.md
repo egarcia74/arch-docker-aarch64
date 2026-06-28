@@ -75,6 +75,13 @@ names (Pester treats it as a data template).
   (`Packages`, `DevUser`, passed as build-args) is ignored when `BaseImage` is set — it's
   baked into the prebuilt image; only runtime config (`Hostname`/ports/`StartSshOnBoot`/volume,
   applied by `Start`) still takes effect.
+- **`SupplementPackages`** (default `$false`): when `$true`, `Start` runs a `pacman -T` check
+  and installs any `Packages` missing from the image (no-op when present). Mitigates the
+  BaseImage caveat — top up a prebuilt image without rebuilding — but installs into the
+  writable layer (re-applied on recreate, lost on remove), so it's convenience, not persistence.
+- **Dockerfile is two-stage:** a `builder` (ADD rootfs + provision) and a `FROM scratch` final
+  that does `COPY --from=builder / /` to squash to one layer (avoids the rootfs/-Syu
+  layer-doubling; ~halves the image). Re-declare ENV/WORKDIR/LABEL/ENTRYPOINT in the final stage.
 - **`StartSshOnBoot`** (default `$false`): when true, `Start` passes `--env ARCH_START_SSHD=1`
   and the image entrypoint (`docker/entrypoint.sh`, derives home from `ENV ARCH_DEV_HOME`)
   starts `sshd` on boot if a key is present, then `exec sleep infinity`. Creation-time

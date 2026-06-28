@@ -17,6 +17,11 @@
     Platform      = 'linux/arm64'
     SshHostPort   = 2222
     StartSshOnBoot = $false
+
+    # When $true, Start installs any Packages not already in the image (a fast `pacman -T`
+    # check; no-op when present). Useful with BaseImage to top up a prebuilt image without
+    # rebuilding. Installs into the writable layer (re-applied on recreate), not persistent.
+    SupplementPackages = $false
     # MountPath is derived in Get-ArchConfig as /home/<DevUser> (the persisted home).
 
     # Official Arch Linux ARM (ALARM) aarch64 root filesystem.

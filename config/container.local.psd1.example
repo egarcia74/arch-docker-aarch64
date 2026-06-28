@@ -7,9 +7,12 @@
     # Examples:
     #   StartSshOnBoot = $true     # auto-start sshd on container boot (needs a key + recreate)
     #   SshHostPort    = 2250      # publish on a different localhost port (needs recreate)
-    #   Packages       = @('base-devel', 'git', 'vim', 'sudo', 'openssh', 'which', 'tmux')
-    #   BaseImage      = 'ghcr.io/egarcia74/arch-docker-aarch64:latest'  # pull instead of build
+    #   Packages           = @('base-devel', 'git', 'vim', 'sudo', 'openssh', 'which', 'tmux')
+    #   BaseImage          = 'ghcr.io/egarcia74/arch-docker-aarch64:latest'  # pull, don't build
+    #   SupplementPackages = $true  # install any Packages missing from the image, at Start
     #
-    # NOTE: with BaseImage set, Packages/DevUser are ignored (already baked into the pulled
-    # image). To customise Packages, leave BaseImage empty so the image is built locally.
+    # NOTE: with BaseImage set, Packages/DevUser are baked into the pulled image. To add
+    # packages without rebuilding, set SupplementPackages = $true (Start installs the missing
+    # ones into the writable layer — re-applied on recreate). To bake them in instead, leave
+    # BaseImage empty so the image is built locally with your Packages.
 }

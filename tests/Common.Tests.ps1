@@ -56,7 +56,7 @@ Describe 'Confirm-ArchConfig (direct)' {
                 ImageName     = 'arch-aarch64:latest'; BaseImage = ''; ContainerName = 'arch-aarch64'
                 Hostname      = 'arch-aarch64'; VolumeName = 'arch-aarch64-home'; Platform = 'linux/arm64'
                 RootfsUrl     = 'http://example.test/x.tar.gz'; Packages = @('git'); DevUser = 'dev'
-                SshHostPort   = 22; StartSshOnBoot = $false
+                SshHostPort   = 22; StartSshOnBoot = $false; SupplementPackages = $false
             }
         }
     }

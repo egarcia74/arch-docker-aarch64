@@ -143,9 +143,11 @@ the FROM-scratch build, skipping the ~784 MB rootfs download:
 `Start`/`Enter`/`Status` are unchanged — they keep using the local `ImageName` tag.
 
 > **Caveat:** `BaseImage` pulls a prebuilt image, so **build-time** config (`Packages`,
-> `DevUser`) is ignored — those are baked into the published image at CI time. Only
-> **runtime** config (`Hostname`, `SshHostPort`, `StartSshOnBoot`, volume) still applies. To
-> customise packages, leave `BaseImage` empty so the image is built locally.
+> `DevUser`) is baked in at CI time. Only **runtime** config (`Hostname`, `SshHostPort`,
+> `StartSshOnBoot`, volume) applies by default. To add packages **without rebuilding**, set
+> `SupplementPackages = $true` — `Start` installs any missing `Packages` into the running
+> container (a `pacman -T` check; into the writable layer, re-applied on recreate). To bake
+> them in instead, leave `BaseImage` empty so the image is built locally.
 
 ## Persistence
 

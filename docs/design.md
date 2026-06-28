@@ -92,24 +92,29 @@ arch-docker-aarch64/
 
 ## Components
 
-### Dockerfile
+### Dockerfile (two-stage, squashed)
 
-- `FROM scratch` then `ADD ArchLinuxARM-aarch64-latest.tar.gz /` (Docker auto-extracts
-  local tarballs).
-- `pacman-key --init && pacman-key --populate archlinuxarm`.
-- `pacman -Syu` + install packages (passed via `--build-arg PACKAGES`), then `pacman -Scc`.
-- Create non-root `dev` user (build-arg `DEV_USER`) in `wheel` with passwordless sudo;
-  its home `/home/dev` is the persisted, mounted-over directory.
-- `ENV ARCH_DEV_HOME=/home/${DEV_USER}` + `COPY entrypoint.sh`; `ENTRYPOINT` runs
-  `entrypoint.sh`, which optionally starts `sshd` on boot (when `ARCH_START_SSHD=1` and a key
-  exists) then `exec sleep infinity`.
+- **`builder` stage:** `FROM scratch` + `ADD ArchLinuxARM-aarch64-latest.tar.gz /` (Docker
+  auto-extracts local tarballs), then `pacman-key` init, `pacman -Syu`, install packages
+  (`--build-arg PACKAGES`), `pacman -Scc` + strip caches, create the non-root `dev` user
+  (`--build-arg DEV_USER`) in `wheel` with passwordless sudo, and `COPY entrypoint.sh`.
+- **final stage:** `FROM scratch` + `COPY --from=builder / /` squashes the provisioned tree
+  into a single layer. A single-stage `ADD` + `RUN pacman -Syu` would keep both the original
+  rootfs files and their upgraded replacements (layers are additive), ~doubling the image;
+  the squash roughly halves it (≈7.4 GB → ≈3.9 GB). Final stage sets the OCI label,
+  `ENV ARCH_DEV_HOME=/home/${DEV_USER}`, `WORKDIR`, and `ENTRYPOINT` (`entrypoint.sh`, which
+  optionally starts `sshd` on boot when `ARCH_START_SSHD=1` and a key exists, then
+  `exec sleep infinity`).
 
 ### config/container.psd1 (+ local overrides)
 
 Single source of truth: image/container/volume names, hostname, platform, rootfs URL,
-package list, dev user, `SshHostPort`, `StartSshOnBoot`, `BaseImage` (mount path is derived
-from dev user). `BaseImage` (when set) makes Build pull + tag a prebuilt image instead of
-building FROM scratch — a fast path that skips the rootfs download.
+package list, dev user, `SshHostPort`, `StartSshOnBoot`, `BaseImage`, `SupplementPackages`
+(mount path is derived from dev user; validated on load by `Confirm-ArchConfig`). `BaseImage`
+(when set) makes Build pull + tag a prebuilt image instead of building FROM scratch — a fast
+path that skips the rootfs download. `SupplementPackages` (opt-in) makes Start install any
+`Packages` not already in the image (a fast `pacman -T` check) — top up a prebuilt `BaseImage`
+without rebuilding; installs into the writable layer.
 Both the build script (build-args) and the runtime scripts read from here. The container is
 created with `--hostname` (stable `dev@<Hostname>` prompt) and `--publish 127.0.0.1:<port>:22`.
 `Get-ArchConfig` merges an optional gitignored `container.local.psd1` over the base (local
