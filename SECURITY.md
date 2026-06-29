@@ -34,8 +34,13 @@ SSH surface, and the CI/publish pipeline — not multi-tenant isolation or remot
 - Inside the container, `dev` has passwordless `sudo` (= root) — expected for a dev sandbox.
 - `DisableSandbox` in `pacman.conf` removes pacman's Landlock defense-in-depth (required under
   Docker Desktop; package signature verification still applies).
-- GitHub Actions are tag-pinned (not SHA-pinned); npm dev tools are unpinned (`npx`). Both are
-  dev/CI-only and low-impact; SHA-pinning + an npm lockfile are reasonable future hardening.
+- GitHub Actions are **SHA-pinned** (immutable) and the npm dev tools are **lockfiled**;
+  [Dependabot](.github/dependabot.yml) bumps both weekly, with each PR vetted by the CI gate.
+- `npm audit` reports moderate **DoS** advisories in the markdown linter's transitive deps
+  (`js-yaml`, `markdown-it`) for which **no fixed upstream release exists yet** — and they only
+  ever parse this repo's own trusted Markdown, so the quadratic-complexity input is not
+  attacker-reachable. Not patched by downgrade (`audit fix --force` regresses the toolchain);
+  Dependabot will pull the real fix once published.
 
 ## Verifying the published image
 

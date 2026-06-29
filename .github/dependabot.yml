@@ -1,0 +1,22 @@
+# Keeps the SHA-pinned GitHub Actions and the npm markdown tooling current.
+# Dependabot updates both the pinned SHA and its trailing `# vX` comment, so the
+# workflow stays immutable (SHA) yet auto-bumped. Each PR runs the full CI gate
+# (build -> sign -> smoke verify), so a bad bump fails the PR, not main.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # One PR per week for all action bumps instead of one per action.
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      dev-tooling:
+        patterns: ["*"]
