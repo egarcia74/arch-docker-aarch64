@@ -167,3 +167,28 @@ jobs:
             test -x /usr/local/bin/entrypoint.sh
             echo "smoke OK: arch=$(uname -m), dev+sudo, packages, ssh host keys, entrypoint"
           '
+
+  # Auto-merge Dependabot PATCH/MINOR bumps once the build above is green; MAJOR bumps are
+  # left open for a manual look (majors are where breaking changes live - see the cosign v3->v4
+  # round). `needs: build` is the gate: the merge can't run unless CI passed, so this needs no
+  # branch protection and leaves direct-push-to-main untouched. Action-bump PRs reach this
+  # (they edit this workflow, which is in the pull_request paths); npm dev-tool bumps don't
+  # trigger a build, so they stay manual - intentional, since the image build isn't a
+  # meaningful gate for prettier/markdownlint and they're low-churn.
+  dependabot-automerge:
+    needs: build
+    if: github.event_name == 'pull_request' && github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # merge the PR
+      pull-requests: write # mark it merged
+    steps:
+      - name: Fetch update metadata
+        id: meta
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+      - name: Merge patch and minor updates
+        if: steps.meta.outputs.update-type == 'version-update:semver-patch' || steps.meta.outputs.update-type == 'version-update:semver-minor'
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge --squash "$PR_URL"

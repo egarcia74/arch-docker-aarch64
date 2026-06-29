@@ -3,6 +3,10 @@
 # workflow stays immutable (SHA) yet auto-bumped. An action-bump PR edits this
 # workflow, so build-image.yml runs on it (quality + image build, via the
 # pull_request trigger) before merge; publish/sign/smoke run post-merge on main.
+# build-image.yml then auto-merges PATCH/MINOR action bumps once that build is green
+# (its dependabot-automerge job) and holds MAJOR bumps for a manual look; because these
+# action updates are grouped, a group containing any major is held as a whole. npm
+# dev-tool bumps don't trigger the build, so they stay manual.
 version: 2
 updates:
   - package-ecosystem: github-actions
