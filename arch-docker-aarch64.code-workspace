@@ -217,7 +217,7 @@
       },
       {
         "label": "Arch: Shell (Command)",
-        "detail": "Run a single command in the running container as dev (e.g. htop, vim, pacman -Ss)",
+        "detail": "Run a single command in the running container as dev (e.g. top, vim, pacman -Qe)",
         "icon": {
           "id": "terminal-cmd",
           "color": "terminal.ansiCyan"
@@ -452,7 +452,7 @@
         "id": "archCommand",
         "description": "Command to run in the container (as the dev user)",
         "type": "promptString",
-        "default": "htop"
+        "default": "top"
       },
       {
         "id": "sampleName",

@@ -66,7 +66,7 @@ Open `arch-docker-aarch64.code-workspace` for logical folders (🏠 Root, 🐳 D
 | `Arch: Start` / `Stop` / `Restart`   | Lifecycle                                                      |
 | `Arch: Remove`                       | Remove container (prompts: container / +image / +data volume)  |
 | `Arch: Shell`                        | Interactive shell as `dev`                                     |
-| `Arch: Shell (Command)`              | Run one command in the container (prompts; e.g. `htop`, `vim`) |
+| `Arch: Shell (Command)`              | Run one command in the container (prompts; e.g. `top`, `vim`)  |
 | `Arch: Status`                       | Show container + volume state                                  |
 | `Arch: Enable SSH`                   | Install key + start sshd; print the ssh command                |
 | `Arch: Run Sample`                   | Run a use-case sample (dotnet / rust / go / build-tools / ssh) |
