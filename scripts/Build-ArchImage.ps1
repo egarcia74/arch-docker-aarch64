@@ -10,6 +10,9 @@
     corruption. Residual trust is in the mirror operator - ALARM does not sign the rootfs
     tarball, and the canonical origin os.archlinuxarm.org is plain HTTP with an invalid cert.
     CI builds run with -StrictChecksum so a verification failure is fatal there.
+    When config BaseImage is set instead of building, the pulled image's keyless cosign
+    signature is verified before it is adopted (best-effort: a warning if cosign is not
+    installed, fatal if an installed cosign rejects the signature). See Confirm-BaseImageSignature.
 .PARAMETER NoCache
     Build without using Docker's layer cache.
 .PARAMETER SkipChecksum
@@ -46,6 +49,10 @@ if ($cfg.BaseImage) {
     Write-Step "Using prebuilt base image '$($cfg.BaseImage)' (skipping the local build)"
     docker pull --platform $cfg.Platform $cfg.BaseImage
     if ($LASTEXITCODE -ne 0) { throw "Failed to pull base image '$($cfg.BaseImage)'." }
+    # Verify provenance before adopting the pulled image (best-effort: warns if cosign is
+    # absent, fatal if a present cosign rejects the signature). This is the consumption-point
+    # check that makes the CI signing actually protect a local pull.
+    Confirm-BaseImageSignature -ImageRef $cfg.BaseImage
     Invoke-Docker -Arguments @('tag', $cfg.BaseImage, $cfg.ImageName) -FailMessage 'Failed to tag base image.'
     Write-Ok "Tagged '$($cfg.BaseImage)' as '$($cfg.ImageName)'."
     return

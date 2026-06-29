@@ -58,6 +58,11 @@ cosign verify ghcr.io/egarcia74/arch-docker-aarch64:latest \
 
 A valid result confirms the image was built and signed by this repository's CI.
 
+When you consume the image via `BaseImage` (the pull-instead-of-build fast path), `Build`
+runs this same verification automatically before adopting the pulled image — best-effort
+(skipped with a warning if cosign isn't installed; fatal if cosign is present and the
+signature is invalid). Install cosign to make the check active on your machine.
+
 ## Reporting
 
 This is a personal project. Report suspected security issues by opening a

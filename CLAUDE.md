@@ -71,7 +71,11 @@ names (Pester treats it as a data template).
 - **`BaseImage`** (default `''`): when set, `Build-ArchImage.ps1` pulls + tags that image as
   `ImageName` and returns early (no FROM-scratch build). Must be a fully-built compatible
   image (dev user + entrypoint), e.g. the GHCR image — not a bare Arch rootfs. The rest of the
-  lifecycle is unchanged since it references `ImageName`. **Caveat:** build-time config
+  lifecycle is unchanged since it references `ImageName`. On pull, `Build` calls
+  `Confirm-BaseImageSignature` (in `_Common.ps1`) to keyless-cosign-verify GHCR images — identity
+  is derived from the ref (`ghcr.io/<owner>/<repo>` → that repo's GitHub URL) — before tagging.
+  Best-effort: warns if cosign is absent, fatal if a present cosign rejects the signature.
+  **Caveat:** build-time config
   (`Packages`, `DevUser`, passed as build-args) is ignored when `BaseImage` is set — it's
   baked into the prebuilt image; only runtime config (`Hostname`/ports/`StartSshOnBoot`/volume,
   applied by `Start`) still takes effect.

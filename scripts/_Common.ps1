@@ -130,6 +130,40 @@ function Assert-Command {
     }
 }
 
+function Confirm-BaseImageSignature {
+    <#  .SYNOPSIS Best-effort keyless-cosign verification of a prebuilt base image before it is
+        adopted (a signature only protects you if it is checked at the point of consumption, and
+        the BaseImage pull IS that point). Verifies GHCR images signed by this repo's CI: the
+        certificate identity is derived from the image ref (ghcr.io/<owner>/<repo> -> the repo's
+        GitHub URL) so forks/renames work without config. cosign absent -> warn and continue;
+        a present-but-FAILED verification throws so the caller never tags an unverified image. #>
+    param([Parameter(Mandatory)][string]$ImageRef)
+
+    if (-not (Get-Command cosign -ErrorAction SilentlyContinue)) {
+        Write-Warning "cosign not found - skipping signature verification of '$ImageRef'. Install it (e.g. 'brew install cosign') to verify image provenance before use."
+        return
+    }
+    # Strip any @digest then a trailing :tag (a ':' after the last '/') to get the bare repo ref.
+    $noDigest = ($ImageRef -split '@', 2)[0]
+    $lastSlash = $noDigest.LastIndexOf('/')
+    $lastColon = $noDigest.LastIndexOf(':')
+    $repoRef = if ($lastColon -gt $lastSlash) { $noDigest.Substring(0, $lastColon) } else { $noDigest }
+    if ($repoRef -notlike 'ghcr.io/*/*') {
+        Write-Warning "Cannot infer a signing identity for '$ImageRef' (not a ghcr.io/<owner>/<repo> image) - skipping verification."
+        return
+    }
+    $ownerRepo = $repoRef.Substring('ghcr.io/'.Length)
+
+    Write-Info "Verifying cosign signature for '$ImageRef'"
+    cosign verify $ImageRef `
+        --certificate-identity-regexp "^https://github.com/$ownerRepo/" `
+        --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw "cosign signature verification FAILED for '$ImageRef' - refusing to use an unverified image. Set BaseImage to a trusted signed image, or remove it to build locally."
+    }
+    Write-Ok "Signature verified (built + signed by github.com/$ownerRepo CI)."
+}
+
 function Test-DockerRunning {
     <#  .SYNOPSIS Throw a clear error unless the Docker daemon is reachable. #>
     if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {

@@ -132,7 +132,10 @@ and sets `$ErrorActionPreference = 'Stop'`.
 
 - **Build** — download tarball into the build context (cached; `-ForceDownload` to refresh),
   verify MD5 (`-SkipChecksum` to skip), `docker build --platform linux/arm64` with
-  `--build-arg` for packages and dev user. `-NoCache` supported.
+  `--build-arg` for packages and dev user. `-NoCache` supported. When `BaseImage` is set it
+  pulls + tags that image instead, first verifying its keyless cosign signature
+  (`Confirm-BaseImageSignature`, best-effort) so a pulled image's provenance is checked at the
+  point of consumption.
 - **Start** — _ensure running_: running → no-op; exists+stopped → `docker start`; missing →
   `docker run -d` with the named volume. If the image is absent it builds it once (calls
   Build), so Start needs no manual pre-build.

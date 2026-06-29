@@ -15,6 +15,9 @@ on Apple Silicon.
 - macOS on Apple Silicon (`arm64`)
 - Docker Desktop (running)
 - PowerShell 7+ (`pwsh`)
+- [cosign](https://docs.sigstore.dev/cosign/installation/) _(optional, `brew install cosign`)_ —
+  lets `Build` verify the signature of a pulled `BaseImage`; without it that check is skipped
+  with a warning
 
 ## Quick start
 
@@ -143,7 +146,10 @@ the FROM-scratch build, skipping the ~784 MB rootfs download:
 @{ BaseImage = 'ghcr.io/egarcia74/arch-docker-aarch64:latest' }
 ```
 
-`Start`/`Enter`/`Status` are unchanged — they keep using the local `ImageName` tag.
+`Build` verifies the pulled image's keyless cosign signature (identity = this repo's CI) before
+adopting it — best-effort: skipped with a warning if cosign isn't installed, fatal if cosign is
+present and the signature doesn't check out. `Start`/`Enter`/`Status` are unchanged — they keep
+using the local `ImageName` tag.
 
 > **Caveat:** `BaseImage` pulls a prebuilt image, so **build-time** config (`Packages`,
 > `DevUser`) is baked in at CI time. Only **runtime** config (`Hostname`, `SshHostPort`,
