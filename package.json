@@ -2,6 +2,7 @@
   "name": "arch-docker-aarch64",
   "version": "1.0.0",
   "private": true,
+  "license": "MIT",
   "description": "Dev tooling (markdown lint + format) for arch-docker-aarch64",
   "scripts": {
     "test": "pwsh -NoProfile -File ./scripts/Invoke-Tests.ps1",

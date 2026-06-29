@@ -201,3 +201,10 @@ docs/                  # design document
 ```
 
 See `docs/design.md` for the full design.
+
+## License
+
+[MIT](LICENSE) © Eduardo Garcia-Prieto.
+
+This covers the repository's own scripts, Dockerfile, and docs. The built image bundles Arch
+Linux ARM packages, each under its own upstream license.

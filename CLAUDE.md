@@ -95,8 +95,9 @@ names (Pester treats it as a data template).
   use `Set-StrictMode -Version Latest`, check `$LASTEXITCODE` after `docker`, and are
   idempotent. Follow that pattern for any new script.
 - File org (per global rules): `docker/`, `scripts/`, `config/`, `docs/`. Nothing in root
-  except `README.md`, `CLAUDE.md`, `SECURITY.md`, `.gitignore`, `*.code-workspace`, and the
-  tool dotfiles (`.prettierrc.json`, `.markdownlint-cli2.jsonc`, `.prettierignore`, `package.json`).
+  except `README.md`, `CLAUDE.md`, `SECURITY.md`, `LICENSE`, `.gitignore`, `*.code-workspace`,
+  and the tool dotfiles (`.prettierrc.json`, `.markdownlint-cli2.jsonc`, `.prettierignore`,
+  `package.json` / `package-lock.json`).
 - Scripts are **PSScriptAnalyzer-clean** against `config/PSScriptAnalyzerSettings.psd1`
   (`Invoke-ScriptAnalyzer -Path ./scripts -Recurse -Settings ./config/PSScriptAnalyzerSettings.psd1`).
   That file documents the three intentional rule exclusions (Write-Host for CLI colour,
