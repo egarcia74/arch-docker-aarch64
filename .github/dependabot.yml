@@ -1,7 +1,8 @@
 # Keeps the SHA-pinned GitHub Actions and the npm markdown tooling current.
 # Dependabot updates both the pinned SHA and its trailing `# vX` comment, so the
-# workflow stays immutable (SHA) yet auto-bumped. Each PR runs the full CI gate
-# (build -> sign -> smoke verify), so a bad bump fails the PR, not main.
+# workflow stays immutable (SHA) yet auto-bumped. An action-bump PR edits this
+# workflow, so build-image.yml runs on it (quality + image build, via the
+# pull_request trigger) before merge; publish/sign/smoke run post-merge on main.
 version: 2
 updates:
   - package-ecosystem: github-actions

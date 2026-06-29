@@ -5,12 +5,15 @@ on:
     - cron: "17 6 * * 1" # weekly Mon 06:17 UTC — refresh the rolling-release image
   push:
     branches: [main]
-    paths: # only when something that affects the image changes
+    paths: &image_inputs # only when something that affects the image changes
       - "docker/**"
       - "scripts/Build-ArchImage.ps1"
       - "scripts/_Common.ps1"
       - "config/container.psd1"
       - ".github/workflows/build-image.yml"
+  pull_request:
+    branches: [main]
+    paths: *image_inputs # validate image-affecting PRs (e.g. Dependabot action bumps) before merge
   workflow_dispatch:
 
 concurrency:
@@ -89,13 +92,18 @@ jobs:
             cat trivy.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+      # Everything below publishes/signs the image and needs main's registry + OIDC
+      # permissions, which PRs (incl. Dependabot) don't get. On a PR the job stops after
+      # build + Trivy scan: enough to prove the image still builds with the changed inputs.
       - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Tag & push (latest + dated + commit SHA)
+        if: github.event_name != 'pull_request'
         env:
           LOCAL: ${{ steps.cfg.outputs.tag }}
           SHA: ${{ github.sha }}
@@ -107,8 +115,10 @@ jobs:
             docker push "$IMAGE:$tag"
           done
       - name: Install cosign
+        if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
       - name: Sign the published image by digest (keyless)
+        if: github.event_name != 'pull_request'
         run: |
           # Sign the immutable digest: all of latest/date/sha- tags point to it, so one
           # signature covers them all (smoke verifies via the sha- tag, which resolves to it).
@@ -120,6 +130,7 @@ jobs:
   # lint and Pester cannot (the actual built image, on a native arm64 runner).
   smoke:
     needs: build
+    if: github.event_name != 'pull_request' # nothing is published on a PR, so nothing to smoke
     runs-on: ubuntu-24.04-arm
     steps:
       - name: Log in to GHCR
