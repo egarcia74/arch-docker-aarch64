@@ -7,7 +7,11 @@
     Also delete the named home volume (DESTROYS the dev user's persisted data).
     Prompts for confirmation unless -Force is given.
 .PARAMETER RemoveImage
-    Also delete the built image.
+    Also remove the local image tag (config ImageName, e.g. arch-aarch64:latest). For a
+    FROM-scratch build this deletes the image and frees its disk. When ImageName was tagged
+    from a pulled BaseImage, it shares one image ID with the source tag, so this only untags
+    the local name - the source (e.g. the GHCR image) stays cached for a fast re-tag; `docker
+    rmi` it directly to reclaim that space.
 .PARAMETER Force
     Do not prompt before removing the volume.
 .EXAMPLE
