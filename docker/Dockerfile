@@ -40,6 +40,11 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # --- Final: squash the provisioned tree into a single layer ------------------------------
+# No USER directive: the image intentionally defaults to root (SonarQube docker:S6471).
+# The entrypoint runs as root because, when StartSshOnBoot is enabled, it writes host keys
+# to /etc/ssh and starts sshd - both root-only. The security boundary is kept elsewhere:
+# interactive use is `docker exec -u dev`, SSH logs in as dev, and the container runs
+# unprivileged (no --privileged/caps), so root-in-container is not root-on-host. See SECURITY.md.
 FROM scratch
 ARG DEV_USER="dev"
 COPY --from=builder / /

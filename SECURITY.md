@@ -32,6 +32,10 @@ SSH surface, and the CI/publish pipeline — not multi-tenant isolation or remot
 **Known, accepted for this use case:**
 
 - Inside the container, `dev` has passwordless `sudo` (= root) — expected for a dev sandbox.
+- The image **defaults to root** (no `USER` directive; SonarQube `docker:S6471`): the entrypoint
+  needs root to write host keys to `/etc/ssh` and start `sshd` when `StartSshOnBoot` is enabled.
+  Interactive use is non-root (`docker exec -u dev`), SSH logs in as `dev`, and the container runs
+  unprivileged (no `--privileged`/added caps), so root-in-container is not root-on-host.
 - `DisableSandbox` in `pacman.conf` removes pacman's Landlock defense-in-depth (required under
   Docker Desktop; package signature verification still applies).
 - GitHub Actions are **SHA-pinned** (immutable) and the npm dev tools are **lockfiled**;
