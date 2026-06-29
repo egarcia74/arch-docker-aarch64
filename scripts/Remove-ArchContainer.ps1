@@ -64,8 +64,21 @@ if ($RemoveVolume) {
 if ($RemoveImage) {
     if (Test-ImageExists $cfg.ImageName) {
         Write-Step "Removing image '$($cfg.ImageName)'"
+        # Capture the underlying image ID first. If other tags (e.g. a pulled BaseImage's GHCR
+        # tag) point at the same ID, `docker rmi <name>` only untags our local name and the
+        # image data stays cached - report that honestly rather than claiming it was deleted.
+        $imageId = docker images -q $cfg.ImageName | Select-Object -First 1
         Invoke-Docker -Arguments @('rmi', $cfg.ImageName) -FailMessage 'Failed to remove image.'
-        Write-Ok 'Image removed.'
+        $remainingTags = if ($imageId) {
+            docker image inspect $imageId --format '{{join .RepoTags ", "}}' 2>$null
+        }
+        if ($LASTEXITCODE -eq 0 -and $remainingTags) {
+            Write-Ok "Untagged '$($cfg.ImageName)' - image data kept (still tagged: $remainingTags)."
+            Write-Info "To reclaim the disk, remove that tag too: docker rmi $remainingTags"
+        }
+        else {
+            Write-Ok 'Image removed.'
+        }
     }
     else {
         Write-Info "Image '$($cfg.ImageName)' does not exist."
