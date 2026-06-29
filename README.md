@@ -60,20 +60,21 @@ Open `arch-docker-aarch64.code-workspace` for logical folders (🏠 Root, 🐳 D
 📜 Scripts, ⚙️ Config, 📚 Docs) and the scripts wired up as tasks. Run them with
 **Terminal → Run Task…** (or `⇧⌘B` for the default _Arch: Build Image_):
 
-| Task                                 | Action                                                        |
-| ------------------------------------ | ------------------------------------------------------------- |
-| `Arch: Build Image`                  | Build the image (prompts for cache / re-download options)     |
-| `Arch: Start` / `Stop` / `Restart`   | Lifecycle                                                     |
-| `Arch: Remove`                       | Remove container (prompts: container / +image / +data volume) |
-| `Arch: Shell`                        | Interactive shell as `dev`                                    |
-| `Arch: Status`                       | Show container + volume state                                 |
-| `Arch: Enable SSH`                   | Install key + start sshd; print the ssh command               |
-| `Arch: Run Sample`                   | Run a use-case sample (dotnet / rust / go / build-tools / ssh)|
-| `Docs: README` / `Docs: Design Spec` | Open docs                                                     |
-| `Dev: Test (Pester)`                 | Run the Pester test suite                                     |
-| `Dev: Lint PowerShell`               | Run PSScriptAnalyzer over the scripts                         |
-| `Dev: Format Markdown`               | prettier + markdownlint-cli2 (Format or Check)                |
-| `Dev: Pre-Commit`                    | Full gate: PSScriptAnalyzer + Pester + Markdown check         |
+| Task                                 | Action                                                         |
+| ------------------------------------ | -------------------------------------------------------------- |
+| `Arch: Build Image`                  | Build the image (prompts for cache / re-download options)      |
+| `Arch: Start` / `Stop` / `Restart`   | Lifecycle                                                      |
+| `Arch: Remove`                       | Remove container (prompts: container / +image / +data volume)  |
+| `Arch: Shell`                        | Interactive shell as `dev`                                     |
+| `Arch: Shell (Command)`              | Run one command in the container (prompts; e.g. `htop`, `vim`) |
+| `Arch: Status`                       | Show container + volume state                                  |
+| `Arch: Enable SSH`                   | Install key + start sshd; print the ssh command                |
+| `Arch: Run Sample`                   | Run a use-case sample (dotnet / rust / go / build-tools / ssh) |
+| `Docs: README` / `Docs: Design Spec` | Open docs                                                      |
+| `Dev: Test (Pester)`                 | Run the Pester test suite                                      |
+| `Dev: Lint PowerShell`               | Run PSScriptAnalyzer over the scripts                          |
+| `Dev: Format Markdown`               | prettier + markdownlint-cli2 (Format or Check)                 |
+| `Dev: Pre-Commit`                    | Full gate: PSScriptAnalyzer + Pester + Markdown check          |
 
 ## Scripts
 

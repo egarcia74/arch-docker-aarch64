@@ -139,8 +139,10 @@ and sets `$ErrorActionPreference = 'Stop'`.
 - **Stop / Restart** — existence-checked wrappers over `docker stop` / `docker restart`.
 - **Remove** — `docker rm -f`; `-RemoveVolume` (prompts unless `-Force`), `-RemoveImage`.
 - **Enter** — _ensure running_ (calls Start if the container is down), then
-  `docker exec -u dev -w /home/dev …`; interactive `bash -l` (auto-degrades `-it`→`-i`
-  when stdin is redirected) or `bash -lc <cmd>` for a one-shot `-Command`.
+  `docker exec -u dev -w /home/dev …` running `bash -l`, or `bash -lc <cmd>` for `-Command`.
+  Both paths allocate a TTY (`-it`) when attached to a real terminal — so interactive
+  programs like `htop`/`vim` work — and auto-degrade to `-i` when stdin is redirected, so
+  piped/CI callers don't fail.
 
 ### Conditional sequencing: scripts, not task dependsOn
 

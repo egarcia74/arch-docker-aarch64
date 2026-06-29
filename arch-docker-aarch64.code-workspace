@@ -216,6 +216,27 @@
         }
       },
       {
+        "label": "Arch: Shell (Command)",
+        "detail": "Run a single command in the running container as dev (e.g. htop, vim, pacman -Ss)",
+        "icon": {
+          "id": "terminal-cmd",
+          "color": "terminal.ansiCyan"
+        },
+        "type": "process",
+        "command": "pwsh",
+        "args": [
+          "-NoProfile",
+          "-Command",
+          "& './scripts/Enter-ArchContainer.ps1' -Command '${input:archCommand}'"
+        ],
+        "problemMatcher": [],
+        "presentation": {
+          "reveal": "always",
+          "panel": "dedicated",
+          "focus": true
+        }
+      },
+      {
         "label": "Arch: Status",
         "detail": "Show container and volume state for arch-aarch64",
         "icon": {
@@ -427,6 +448,12 @@
       }
     ],
     "inputs": [
+      {
+        "id": "archCommand",
+        "description": "Command to run in the container (as the dev user)",
+        "type": "promptString",
+        "default": "htop"
+      },
       {
         "id": "sampleName",
         "description": "Use-case sample to run in the container",
