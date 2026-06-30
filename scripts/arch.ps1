@@ -24,6 +24,17 @@
     session. The lifecycle scripts it calls set their own (in their own scope) as usual.
 #>
 
+# Must be DOT-SOURCED. Run normally, the shortcuts get defined in a child scope that vanishes
+# on exit - and `arch` would then fall through to the macOS /usr/bin/arch binary, so a later
+# `arch help` fails confusingly. Detect that and guide the user instead of printing a
+# misleading "loaded" message. ($MyInvocation.InvocationName is '.' only when dot-sourced.)
+if ($MyInvocation.InvocationName -ne '.') {
+    Write-Warning 'arch.ps1 only works when DOT-SOURCED (note the leading ". "):'
+    Write-Warning "    . $PSCommandPath"
+    Write-Warning 'Add that line to your $PROFILE to load the shortcuts in every session.'
+    return
+}
+
 # Resolved once at load (this file lives in scripts/), so `arch ...` works from any directory.
 $script:ArchScriptsDir = $PSScriptRoot
 
