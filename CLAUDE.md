@@ -93,7 +93,10 @@ names (Pester treats it as a data template).
   rebuild to apply.
 - All scripts dot-source `scripts/_Common.ps1`, set `$ErrorActionPreference = 'Stop'`,
   use `Set-StrictMode -Version Latest`, check `$LASTEXITCODE` after `docker`, and are
-  idempotent. Follow that pattern for any new script.
+  idempotent. Follow that pattern for any new script. **Exception:** `scripts/arch.ps1` is a
+  dot-sourced session loader (`. ./scripts/arch.ps1` defines the `arch <verb>` shortcuts) and
+  deliberately omits `Set-StrictMode`/`$ErrorActionPreference` at file scope — dot-sourcing
+  would leak those into the user's interactive session. It is PSScriptAnalyzer-clean regardless.
 - File org (per global rules): `docker/`, `scripts/`, `config/`, `docs/`. Nothing in root
   except `README.md`, `CLAUDE.md`, `SECURITY.md`, `LICENSE`, `.gitignore`, `*.code-workspace`,
   and the tool dotfiles (`.prettierrc.json`, `.markdownlint-cli2.jsonc`, `.prettierignore`,

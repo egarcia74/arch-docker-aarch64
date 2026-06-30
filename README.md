@@ -97,6 +97,22 @@ Useful build flags: `-NoCache`, `-ForceDownload`, `-SkipChecksum`.
 
 All scripts are idempotent and guard on Docker being reachable.
 
+### Terminal shortcuts (`arch <command>`)
+
+Prefer the terminal? Dot-source the loader to get one short verb for everything (tab-completes;
+extra args pass straight through to the underlying script):
+
+```pwsh
+. ./scripts/arch.ps1            # this session (add the line to $PROFILE to make it permanent)
+
+arch build -NoCache            # arch start | stop | restart | status | ssh
+arch enter                     # shell in as dev   (alias: arch shell)
+arch enter htop                # run one command in the container
+arch sample dotnet             # run a samples/ use-case
+arch rm -RemoveImage           # remove container (+ optionally image/volume); alias: arch remove
+arch help                      # full list
+```
+
 ## Development & quality
 
 Quality tooling has three runners (in `scripts/`), each also exposed as a VS Code task
